@@ -52,8 +52,8 @@
         let mouse = { x: -9999, y: -9999 };
 
         // Set canvas size - fixed for iframe embed (no CSS scaling for accurate mouse)
-        const CANVAS_WIDTH = 500;
-        const CANVAS_HEIGHT = 300;
+        const CANVAS_WIDTH = 400;
+        const CANVAS_HEIGHT = 240;
         canvas.width = CANVAS_WIDTH;
         canvas.height = CANVAS_HEIGHT;
 
@@ -96,16 +96,17 @@
                 const tempCanvas = document.createElement("canvas");
                 const tempCtx = tempCanvas.getContext("2d");
 
-                // Scale image to fit canvas with padding on all sides
+                // Scale image to fit canvas with BIG padding on all sides
                 const scale = Math.min(
                     canvas.width / img.width,
                     canvas.height / img.height
-                ) * 0.75;
+                ) * 0.55;
 
                 const imgWidth = img.width * scale;
                 const imgHeight = img.height * scale;
-                const offsetX = (canvas.width - imgWidth) / 2;
-                const offsetY = (canvas.height - imgHeight) / 2;
+                // Center with slight offset to top-left so right/bottom have more room
+                const offsetX = (canvas.width - imgWidth) * 0.35;
+                const offsetY = (canvas.height - imgHeight) * 0.35;
 
                 tempCanvas.width = canvas.width;
                 tempCanvas.height = canvas.height;
@@ -135,7 +136,22 @@
                     }
                 }
 
+                console.log(`Canvas: ${canvas.width}x${canvas.height}`);
+                console.log(`Image original: ${img.width}x${img.height}`);
+                console.log(`Image scaled: ${imgWidth}x${imgHeight}`);
+                console.log(`Offset: ${offsetX}, ${offsetY}`);
                 console.log(`Created ${particles.length} particles`);
+
+                // Find particle bounds
+                let minX = Infinity, maxX = 0, minY = Infinity, maxY = 0;
+                particles.forEach(p => {
+                    if (p.x < minX) minX = p.x;
+                    if (p.x > maxX) maxX = p.x;
+                    if (p.y < minY) minY = p.y;
+                    if (p.y > maxY) maxY = p.y;
+                });
+                console.log(`Particle bounds: X(${minX.toFixed(0)}-${maxX.toFixed(0)}) Y(${minY.toFixed(0)}-${maxY.toFixed(0)})`);
+
                 animate();
             };
 
