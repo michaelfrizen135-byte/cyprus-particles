@@ -104,9 +104,9 @@
 
                 const imgWidth = img.width * scale;
                 const imgHeight = img.height * scale;
-                // Center properly
+                // Position: centered horizontally, pushed up vertically
                 const offsetX = (canvas.width - imgWidth) / 2;
-                const offsetY = (canvas.height - imgHeight) / 2;
+                const offsetY = (canvas.height - imgHeight) / 4;  // Less top padding
 
                 tempCanvas.width = canvas.width;
                 tempCanvas.height = canvas.height;
