@@ -52,8 +52,8 @@
         let mouse = { x: -9999, y: -9999 };
 
         // Set canvas size - fixed for iframe embed (no CSS scaling for accurate mouse)
-        const CANVAS_WIDTH = 400;
-        const CANVAS_HEIGHT = 240;
+        const CANVAS_WIDTH = 600;
+        const CANVAS_HEIGHT = 360;
         canvas.width = CANVAS_WIDTH;
         canvas.height = CANVAS_HEIGHT;
 
@@ -96,17 +96,17 @@
                 const tempCanvas = document.createElement("canvas");
                 const tempCtx = tempCanvas.getContext("2d");
 
-                // Scale image to fit canvas with BIG padding on all sides
+                // Scale image to fit canvas centered
                 const scale = Math.min(
                     canvas.width / img.width,
                     canvas.height / img.height
-                ) * 0.55;
+                ) * 0.85;
 
                 const imgWidth = img.width * scale;
                 const imgHeight = img.height * scale;
-                // Center with slight offset to top-left so right/bottom have more room
-                const offsetX = (canvas.width - imgWidth) * 0.35;
-                const offsetY = (canvas.height - imgHeight) * 0.35;
+                // Center properly
+                const offsetX = (canvas.width - imgWidth) / 2;
+                const offsetY = (canvas.height - imgHeight) / 2;
 
                 tempCanvas.width = canvas.width;
                 tempCanvas.height = canvas.height;
