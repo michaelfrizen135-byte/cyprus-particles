@@ -38,7 +38,7 @@
             particleDensity: 5,           // Lower = more particles
 
             // Animation settings
-            mouseRadius: 65,              // How far mouse influence reaches
+            mouseRadius: 75,              // How far mouse influence reaches
             returnSpeed: 0.005,           // How fast particles return (very slow, low gravity)
             scatterForce: 12,             // How strongly particles scatter (spread further)
             friction: 0.96,               // Smoothness of movement (more floaty, less drag)
@@ -96,11 +96,11 @@
                 const tempCanvas = document.createElement("canvas");
                 const tempCtx = tempCanvas.getContext("2d");
 
-                // Scale image to fit canvas (bigger, with padding)
+                // Scale image to fit canvas with padding on all sides
                 const scale = Math.min(
                     canvas.width / img.width,
                     canvas.height / img.height
-                ) * 0.9;
+                ) * 0.75;
 
                 const imgWidth = img.width * scale;
                 const imgHeight = img.height * scale;
