@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -38,7 +38,7 @@
             particleDensity: 7,           // Lower = more particles (more spread out)
 
             // Animation settings
-            mouseRadius: 150,             // How far mouse influence reaches (bigger = easier to destroy)
+            mouseRadius: 70,              // How far mouse influence reaches
             returnSpeed: 0.005,           // How fast particles return (very slow, low gravity)
             scatterForce: 8,              // How strongly particles scatter (more dramatic)
             friction: 0.96,               // Smoothness of movement (more floaty, less drag)
@@ -51,18 +51,19 @@
         let particles = [];
         let mouse = { x: -9999, y: -9999 };
 
-        // Set canvas size
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resize();
-        window.addEventListener("resize", resize);
+        // Set canvas size - fixed for iframe embed (no CSS scaling for accurate mouse)
+        const CANVAS_WIDTH = 700;
+        const CANVAS_HEIGHT = 500;
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
 
-        // Mouse tracking
+        // Mouse tracking - account for canvas scaling
         canvas.addEventListener("mousemove", (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouse.x = (e.clientX - rect.left) * scaleX;
+            mouse.y = (e.clientY - rect.top) * scaleY;
         });
 
         canvas.addEventListener("mouseleave", () => {
@@ -70,11 +71,14 @@
             mouse.y = -9999;
         });
 
-        // Touch support
+        // Touch support - account for canvas scaling
         canvas.addEventListener("touchmove", (e) => {
             e.preventDefault();
-            mouse.x = e.touches[0].clientX;
-            mouse.y = e.touches[0].clientY;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouse.x = (e.touches[0].clientX - rect.left) * scaleX;
+            mouse.y = (e.touches[0].clientY - rect.top) * scaleY;
         });
 
         canvas.addEventListener("touchend", () => {
@@ -92,11 +96,11 @@
                 const tempCanvas = document.createElement("canvas");
                 const tempCtx = tempCanvas.getContext("2d");
 
-                // Scale image to fit canvas
+                // Scale image to fit canvas (bigger, with padding)
                 const scale = Math.min(
                     canvas.width / img.width,
                     canvas.height / img.height
-                ) * 0.8;
+                ) * 0.9;
 
                 const imgWidth = img.width * scale;
                 const imgHeight = img.height * scale;
