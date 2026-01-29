@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyprus Particles</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            background: transparent !important;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // ========================================
+        // CONFIGURATION - Edit these values
+        // ========================================
+        const CONFIG = {
+            // IMPORTANT: Replace this URL with your Cyprus PNG image URL from imgur/imgbb
+            imageUrl: "https://i.imgur.com/mIFZPnl.png",
+
+            // Particle settings
+            particleColor: "#2563EB",    // Blue color (change to match your site)
+            particleSize: 1.5,            // Base size of particles (smaller)
+            particleDensity: 7,           // Lower = more particles (more spread out)
+
+            // Animation settings
+            mouseRadius: 150,             // How far mouse influence reaches (bigger = easier to destroy)
+            returnSpeed: 0.005,           // How fast particles return (very slow, low gravity)
+            scatterForce: 8,              // How strongly particles scatter (more dramatic)
+            friction: 0.96,               // Smoothness of movement (more floaty, less drag)
+        };
+        // ========================================
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        let particles = [];
+        let mouse = { x: -9999, y: -9999 };
+
+        // Set canvas size
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener("resize", resize);
+
+        // Mouse tracking
+        canvas.addEventListener("mousemove", (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        canvas.addEventListener("mouseleave", () => {
+            mouse.x = -9999;
+            mouse.y = -9999;
+        });
+
+        // Touch support
+        canvas.addEventListener("touchmove", (e) => {
+            e.preventDefault();
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+        });
+
+        canvas.addEventListener("touchend", () => {
+            mouse.x = -9999;
+            mouse.y = -9999;
+        });
+
+        // Load image and create particles
+        function loadImage() {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+
+            img.onload = () => {
+                // Create temp canvas to read pixels
+                const tempCanvas = document.createElement("canvas");
+                const tempCtx = tempCanvas.getContext("2d");
+
+                // Scale image to fit canvas
+                const scale = Math.min(
+                    canvas.width / img.width,
+                    canvas.height / img.height
+                ) * 0.8;
+
+                const imgWidth = img.width * scale;
+                const imgHeight = img.height * scale;
+                const offsetX = (canvas.width - imgWidth) / 2;
+                const offsetY = (canvas.height - imgHeight) / 2;
+
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                tempCtx.drawImage(img, offsetX, offsetY, imgWidth, imgHeight);
+
+                // Read pixel data
+                const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+                particles = [];
+
+                for (let y = 0; y < canvas.height; y += CONFIG.particleDensity) {
+                    for (let x = 0; x < canvas.width; x += CONFIG.particleDensity) {
+                        const index = (y * canvas.width + x) * 4;
+                        const alpha = imageData.data[index + 3];
+
+                        // Only create particle if pixel is visible
+                        if (alpha > 128) {
+                            particles.push({
+                                x: x,
+                                y: y,
+                                originX: x,
+                                originY: y,
+                                vx: 0,
+                                vy: 0,
+                                size: CONFIG.particleSize + Math.random() * 1,
+                            });
+                        }
+                    }
+                }
+
+                console.log(`Created ${particles.length} particles`);
+                animate();
+            };
+
+            img.onerror = () => {
+                console.error("Failed to load image. Make sure the URL is correct and allows cross-origin access.");
+                // Create fallback shape
+                createFallbackShape();
+                animate();
+            };
+
+            img.src = CONFIG.imageUrl;
+        }
+
+        // Fallback if image doesn't load
+        function createFallbackShape() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            // Simple ellipse shape as fallback
+            for (let angle = 0; angle < Math.PI * 2; angle += 0.015) {
+                for (let r = 0; r < 150; r += CONFIG.particleDensity) {
+                    const x = centerX + Math.cos(angle) * r * 1.8;
+                    const y = centerY + Math.sin(angle) * r * 0.7;
+
+                    if (Math.random() > 0.2) {
+                        particles.push({
+                            x: x,
+                            y: y,
+                            originX: x,
+                            originY: y,
+                            vx: 0,
+                            vy: 0,
+                            size: CONFIG.particleSize + Math.random() * 1,
+                        });
+                    }
+                }
+            }
+        }
+
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+
+                // Calculate distance from mouse
+                const dx = mouse.x - p.x;
+                const dy = mouse.y - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                // Repel from mouse
+                if (dist < CONFIG.mouseRadius && dist > 0) {
+                    const force = (CONFIG.mouseRadius - dist) / CONFIG.mouseRadius;
+                    p.vx -= (dx / dist) * force * CONFIG.scatterForce;
+                    p.vy -= (dy / dist) * force * CONFIG.scatterForce;
+                }
+
+                // Return to origin
+                p.vx += (p.originX - p.x) * CONFIG.returnSpeed;
+                p.vy += (p.originY - p.y) * CONFIG.returnSpeed;
+
+                // Apply friction
+                p.vx *= CONFIG.friction;
+                p.vy *= CONFIG.friction;
+
+                // Update position
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Draw particle
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = CONFIG.particleColor;
+                ctx.fill();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Start
+        loadImage();
+    </script>
+</body>
+</html>
