@@ -33,10 +33,9 @@
             imageUrl: "https://i.imgur.com/mIFZPnl.png",
 
             // Particle settings
-            particleColor: "#2563EB",      // Main blue color
-            larnacaColor: "#93C5FD",       // Lighter blue for Larnaca region
-            particleSize: 0.8,             // Base size of particles (tiny)
-            particleDensity: 5,            // Lower = more particles
+            particleColor: "#2563EB",    // Blue color (change to match your site)
+            particleSize: 0.8,            // Base size of particles (tiny)
+            particleDensity: 5,           // Lower = more particles
 
             // Animation settings
             mouseRadius: 65,              // How far mouse influence reaches
@@ -52,7 +51,7 @@
         let particles = [];
         let mouse = { x: -9999, y: -9999 };
 
-        // Set canvas size - bigger to allow particle overflow into other sections
+        // Set canvas size - fixed for iframe embed (no CSS scaling for accurate mouse)
         const CANVAS_WIDTH = 800;
         const CANVAS_HEIGHT = 560;
         canvas.width = CANVAS_WIDTH;
@@ -124,14 +123,6 @@
 
                         // Only create particle if pixel is visible
                         if (alpha > 128) {
-                            // Check if particle is in Larnaca region (southeastern area)
-                            // Normalized coordinates relative to image bounds
-                            const nx = (x - offsetX) / imgWidth;
-                            const ny = (y - offsetY) / imgHeight;
-
-                            // Larnaca region: roughly 50-72% from left, 45-85% from top
-                            const isLarnaca = nx > 0.50 && nx < 0.72 && ny > 0.45 && ny < 0.85;
-
                             particles.push({
                                 x: x,
                                 y: y,
@@ -140,28 +131,12 @@
                                 vx: 0,
                                 vy: 0,
                                 size: CONFIG.particleSize + Math.random() * 1,
-                                color: isLarnaca ? CONFIG.larnacaColor : CONFIG.particleColor,
                             });
                         }
                     }
                 }
 
-                console.log(`Canvas: ${canvas.width}x${canvas.height}`);
-                console.log(`Image original: ${img.width}x${img.height}`);
-                console.log(`Image scaled: ${imgWidth}x${imgHeight}`);
-                console.log(`Offset: ${offsetX}, ${offsetY}`);
                 console.log(`Created ${particles.length} particles`);
-
-                // Find particle bounds
-                let minX = Infinity, maxX = 0, minY = Infinity, maxY = 0;
-                particles.forEach(p => {
-                    if (p.x < minX) minX = p.x;
-                    if (p.x > maxX) maxX = p.x;
-                    if (p.y < minY) minY = p.y;
-                    if (p.y > maxY) maxY = p.y;
-                });
-                console.log(`Particle bounds: X(${minX.toFixed(0)}-${maxX.toFixed(0)}) Y(${minY.toFixed(0)}-${maxY.toFixed(0)})`);
-
                 animate();
             };
 
@@ -235,7 +210,7 @@
                 // Draw particle
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = p.color || CONFIG.particleColor;
+                ctx.fillStyle = CONFIG.particleColor;
                 ctx.fill();
             }
 
